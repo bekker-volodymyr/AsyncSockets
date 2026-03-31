@@ -14,7 +14,7 @@ namespace Client
             InitializeComponent();
         }
 
-        private void btnDisconnect_Click(object sender, EventArgs e)
+        private async void btnDisconnect_Click(object sender, EventArgs e)
         {
             if(_socket == null || !_socket.Connected)
             {
@@ -23,7 +23,7 @@ namespace Client
                 return;
             }
 
-            _socket.Disconnect(false);
+            await _socket.DisconnectAsync(false);
             _socket.Close();
 
             btnDisconnect.Enabled = false;
@@ -31,7 +31,7 @@ namespace Client
             btnConnect.Enabled = true;
         }
 
-        private void btnSend_Click(object sender, EventArgs e)
+        private async void btnSend_Click(object sender, EventArgs e)
         {
             if (_socket == null || !_socket.Connected)
             {
@@ -41,14 +41,14 @@ namespace Client
             }
 
             byte[] msg = Encoding.UTF8.GetBytes(txtMessage.Text);
-            _socket.Send(msg);
+            await _socket.SendAsync(msg);
 
             byte[] buffer = new byte[1024];
-            int received = _socket.Receive(buffer);
+            int received = await _socket.ReceiveAsync(buffer);
             txtAnswer.Text = Encoding.UTF8.GetString(buffer, 0, received);
         }
 
-        private void btnConnect_Click(object sender, EventArgs e)
+        private async void btnConnect_Click(object sender, EventArgs e)
         {
             if(_socket != null && _socket.Connected)
             {
@@ -60,7 +60,7 @@ namespace Client
             try
             {
                 _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                _socket.Connect(_serverEndpoint);
+                await _socket.ConnectAsync(_serverEndpoint);
                 if(_socket.Connected)
                 {
                     MessageBox.Show("Підключення успішне!");

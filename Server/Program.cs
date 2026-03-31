@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Server
 {
@@ -8,7 +9,7 @@ namespace Server
     {
         private const int PORT = 5001;
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Socket server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -20,27 +21,27 @@ namespace Server
 
             while(true)
             {
-                Socket client = server.Accept();
+                Socket client = await server.AcceptAsync();
 
-                HandleClient(client);
+                _ = Task.Run(() => HandleClientAsync(client));
             }
         }
 
-        private static void HandleClient(Socket client)
+        private static async Task HandleClientAsync(Socket client)
         {
             try
             {
                 byte[] buffer = new byte[1024];
                 while(true)
                 {
-                    int received = client.Receive(buffer);
+                    int received = await client.ReceiveAsync(buffer);
                     if (received == 0) break;
 
                     string msg = Encoding.UTF8.GetString(buffer, 0, received);
                     Console.WriteLine(msg);
                     string answer = "Echo: " + msg;
 
-                    client.Send(Encoding.UTF8.GetBytes(answer));
+                    await client.SendAsync(Encoding.UTF8.GetBytes(answer));
                 }
             }
             catch (SocketException ex)
